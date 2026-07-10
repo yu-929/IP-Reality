@@ -8,11 +8,17 @@
 # Linux / macOS 一键安装
 curl -fsSL https://raw.githubusercontent.com/yu-929/IP-Reality/main/install.sh | bash
 
-# 菜单模式
-xiao
+# 最简用法 — 位置参数，CF 域名只需输入一次
+xiao images.apple.com my.cdn.domain
 
-# 命令行模式
-xiao --sni images.apple.com --cf-domain my-cdn.example.com
+# 预设 SNI — 内置常用大厂域名
+xiao -p 1 my.cdn.domain          # 1=images.apple.com, 2=swdist, 3=swcdn...
+
+# 首次之后 CF 域名自动记忆，直接用
+xiao images.apple.com
+
+# 菜单模式（交互引导）
+xiao
 
 # Windows: 下载项目 -> 双击 build.bat -> dist\xiao.exe
 ```
@@ -68,19 +74,16 @@ xiao 自动化发现这些节点。
 xiao --sni images.apple.com --cf-domain my-cdn.example.com
 
 # 多 SNI 批量
-xiao --sni-list ./snis.txt --cf-domain my-cdn.example.com
+xiao -l snis.txt my-cdn.example.com
 
-# 高并发 VPS
-xiao --sni images.apple.com --cf-domain my-cdn.example.com \
-    --concurrency 2000 --timeout 2.5
+# 高并发 VPS（并发数自动根据 ulimit 计算）
+xiao images.apple.com my-cdn.example.com --concurrency 2000 --timeout 2.5
 
 # 配合 TLS 账本
-xiao --sni swdist.apple.com --cf-domain my-cdn.example.com \
-    --ledger /data/sonar-scans/
+xiao swdist.apple.com my-cdn.example.com --ledger /data/sonar-scans/
 
 # 指定输出
-xiao --sni images.apple.com --cf-domain my-cdn.example.com \
-    --output nodes.json
+xiao images.apple.com my-cdn.example.com -o nodes.json
 ```
 
 ## 输出格式
