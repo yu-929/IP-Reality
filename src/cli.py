@@ -15,6 +15,7 @@ import logging
 import os
 import resource
 import signal
+import subprocess
 import sys
 import re
 from pathlib import Path
@@ -66,6 +67,20 @@ def _save_cf_domain(domain: str):
         CF_CONFIG.write_text(domain)
     except Exception:
         pass
+
+
+def _do_update():
+    """自更新：git pull + pip install -e"""
+    repo = Path(__file__).resolve().parent.parent
+
+    print("xiao update — 检查更新 ...")
+    r = subprocess.run(["git", "pull"], cwd=repo, capture_output=True, text=True)
+    if "Already up to date" in r.stdout:
+        print("已是最新版本")
+        return
+    print(r.stdout.strip())
+    subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", "-e", str(repo), "-q"])
+    print("更新完成")
 
 
 def setup_logging(verbose: bool, quiet: bool):
@@ -222,9 +237,15 @@ def main():
     parser.add_argument("--no-ipv6", action="store_true")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--update", "-u", action="store_true",
+                        help="更新到最新版本")
     args = parser.parse_args()
 
     logger = setup_logging(args.verbose, args.quiet)
+
+    if args.update:
+        _do_update()
+        return
 
     # ── SNI 解析 ──
     snis = []
