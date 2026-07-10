@@ -6,7 +6,7 @@
 
 ```bash
 # Linux / macOS 一键安装
-curl -fsSL https://raw.githubusercontent.com/e13815332/ip-reality/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/yu-929/IP-Reality/main/install.sh | bash
 
 # 菜单模式
 qian
@@ -116,7 +116,7 @@ JSON:
 ### Linux / macOS
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/e13815332/ip-reality/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/yu-929/IP-Reality/main/install.sh | bash
 ```
 
 安装后全局可用 `qian` 命令。

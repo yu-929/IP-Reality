@@ -9,7 +9,7 @@ echo
 
 INSTALL_DIR="/opt/ip-reality"
 BIN_PATH="/usr/local/bin/qian"
-REPO_URL="https://github.com/e13815332/ip-reality.git"
+REPO_URL="https://github.com/yu-929/IP-Reality.git"
 
 # 1. 检查 Python
 if ! command -v python3 &>/dev/null; then
