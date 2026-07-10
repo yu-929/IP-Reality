@@ -159,7 +159,8 @@ async def menu_mode(args):
 
     await run_pipeline(snis, cf_domain, DEFAULT_PORTS, args.ledger,
                        args.concurrency, args.timeout, args.output,
-                       not args.no_redundancy)
+                       not args.no_redundancy,
+                       proxy_url=args.proxy)
 
 
 async def run_pipeline(
@@ -174,7 +175,7 @@ async def run_pipeline(
     for sni in snis:
         if shutdown_event and shutdown_event.is_set():
             return
-        targets = await fetch_ct_logs(sni, ports, timeout, no_ipv6=no_ipv6)
+        targets = await fetch_ct_logs(sni, ports, timeout, no_ipv6=no_ipv6, proxy_url=proxy_url)
         all_targets.update(targets)
 
     if ledger_dir:
@@ -303,7 +304,7 @@ def main():
         for sni in snis:
             if shutdown_event.is_set():
                 return
-            targets = await fetch_ct_logs(sni, ports, args.timeout, no_ipv6=args.no_ipv6)
+            targets = await fetch_ct_logs(sni, ports, args.timeout, no_ipv6=args.no_ipv6, proxy_url=args.proxy)
             all_targets.update(targets)
 
         ledger_dir = args.ledger

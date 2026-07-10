@@ -1,6 +1,6 @@
 """
 Phase 1: 资产收集模块
-  A: CT 日志 + DNS + 伴随端口嗅探
+  A: CT 日志 + DNS + 伴随端口嗅探 (支持代理)
   B: TLS 历史账本流式过滤
 """
 
@@ -13,15 +13,45 @@ from pathlib import Path
 
 logger = logging.getLogger("xiao.fetcher")
 
-CRTSH_MIN_INTERVAL = 1.2  # crt.sh 请求最小间隔 (秒)
+CRTSH_MIN_INTERVAL = 1.2
+
+
+def _parse_proxy(proxy_url: str | None) -> str | None:
+    """将 socks5://host:port 转为 aiohttp 兼容格式"""
+    if not proxy_url:
+        return None
+    return proxy_url
+
+
+def _aiohttp_proxy_kwargs(proxy_url: str | None) -> dict:
+    """构造 aiohttp ClientSession 的代理参数"""
+    if not proxy_url:
+        return {}
+    return {"proxy": proxy_url}
+
+
+def _proxy_connector(proxy_url: str | None):
+    """构造 SOCKS5 TCP 连接器，供端口嗅探用"""
+    if not proxy_url:
+        return None
+    try:
+        from python_socks.async_.asyncio import Proxy
+        from python_socks import parse_proxy_url
+        ptype, host, port, user, pwd = parse_proxy_url(proxy_url)
+        return Proxy(ptype, host, port, username=user, password=pwd)
+    except ImportError:
+        return None
 
 
 # ── Phase 1A: CT 日志 ──
 
-async def fetch_ct_logs(sni: str, ports: list[int], timeout: float, no_ipv6: bool = False) -> set[tuple[str, int]]:
+async def fetch_ct_logs(
+    sni: str, ports: list[int], timeout: float,
+    no_ipv6: bool = False, proxy_url: str | None = None,
+) -> set[tuple[str, int]]:
     targets: set[tuple[str, int]] = set()
 
-    subdomains = await _query_crtsh(sni, timeout)
+    subdomains = await _query_crtsh(sni, timeout, proxy_url=proxy_url)
     if not subdomains:
         logger.warning(f"  crt.sh 无结果: {sni}")
         return targets
@@ -29,24 +59,25 @@ async def fetch_ct_logs(sni: str, ports: list[int], timeout: float, no_ipv6: boo
     subdomains = list(set(subdomains))
     logger.info(f"  crt.sh -> {len(subdomains)} 个子域")
 
-    ips = await _resolve_domains(subdomains, no_ipv6=no_ipv6)
+    ips = await _resolve_domains(subdomains, no_ipv6=no_ipv6, proxy_url=proxy_url)
     logger.info(f"  DNS -> {len(ips)} 个唯一 IP")
 
-    targets = await _sniff_ports(list(ips), ports, timeout)
+    targets = await _sniff_ports(list(ips), ports, timeout, proxy_url=proxy_url)
     logger.info(f"  端口嗅探 -> {len(targets)} 个开放")
 
     return targets
 
 
-async def _query_crtsh(sni: str, timeout: float) -> list[str]:
+async def _query_crtsh(sni: str, timeout: float, proxy_url: str | None = None) -> list[str]:
     import aiohttp
 
     url = f"https://crt.sh/?q=%25.{sni}&output=json"
     retries = 3
+    kwargs = _aiohttp_proxy_kwargs(proxy_url)
 
     for attempt in range(retries):
         try:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(**kwargs) as session:
                 async with session.get(
                     url,
                     timeout=aiohttp.ClientTimeout(total=timeout + 10),
@@ -90,7 +121,9 @@ async def _query_crtsh(sni: str, timeout: float) -> list[str]:
     return list(domains)
 
 
-async def _resolve_domains(domains: list[str], no_ipv6: bool = False) -> set[str]:
+async def _resolve_domains(
+    domains: list[str], no_ipv6: bool = False, proxy_url: str | None = None,
+) -> set[str]:
     ips: set[str] = set()
 
     try:
@@ -123,10 +156,9 @@ async def _resolve_domains(domains: list[str], no_ipv6: bool = False) -> set[str
         async def resolve(domain: str):
             async with sem:
                 try:
-                    for fam in (0,):  # AF_INET only for fallback
-                        result = await loop.getaddrinfo(domain, None, family=fam)
-                        for r in result:
-                            ips.add(r[4][0])
+                    result = await loop.getaddrinfo(domain, None)
+                    for r in result:
+                        ips.add(r[4][0])
                 except Exception:
                     pass
 
@@ -135,16 +167,27 @@ async def _resolve_domains(domains: list[str], no_ipv6: bool = False) -> set[str
     return ips
 
 
-async def _sniff_ports(ips: list[str], ports: list[int], timeout: float) -> set[tuple[str, int]]:
+async def _sniff_ports(
+    ips: list[str], ports: list[int], timeout: float, proxy_url: str | None = None,
+) -> set[tuple[str, int]]:
     targets: set[tuple[str, int]] = set()
     sem = asyncio.Semaphore(300)
+    connector = _proxy_connector(proxy_url)
 
     async def probe(ip: str, port: int):
         async with sem:
             try:
-                _, writer = await asyncio.wait_for(
-                    asyncio.open_connection(ip, port), timeout=min(timeout, 2.0)
-                )
+                if connector:
+                    sock = await asyncio.wait_for(
+                        connector.connect(dest_host=ip, dest_port=port),
+                        timeout=min(timeout, 2.0),
+                    )
+                    _, writer = await asyncio.open_connection(sock=sock)
+                else:
+                    _, writer = await asyncio.wait_for(
+                        asyncio.open_connection(ip, port),
+                        timeout=min(timeout, 2.0),
+                    )
                 writer.close()
                 await writer.wait_closed()
                 targets.add((ip, port))
@@ -160,7 +203,6 @@ async def _sniff_ports(ips: list[str], ports: list[int], timeout: float) -> set[
 
 async def fetch_tls_ledger(ledger_dir: str, sni: str) -> set[tuple[str, int]]:
     targets: set[tuple[str, int]] = set()
-    path = Path(ledger_dir)
     sni_lower = sni.lower()
     ipv4_pattern = re.compile(r"^\d+\.\d+\.\d+\.\d+$")
     ipv6_pattern = re.compile(r"^[0-9a-fA-F:]+$")
