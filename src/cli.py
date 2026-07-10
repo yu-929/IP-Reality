@@ -69,18 +69,43 @@ def _save_cf_domain(domain: str):
         pass
 
 
-def _do_update():
-    """自更新：git pull + pip install -e"""
+def _do_uninstall():
+    """卸载 xiao — 移除包、命令和配置"""
     repo = Path(__file__).resolve().parent.parent
+    cf = CF_CONFIG
+    bins = [
+        Path("/usr/local/bin/xiao"),
+        Path("/usr/bin/xiao"),
+    ]
 
-    print("xiao update — 检查更新 ...")
-    r = subprocess.run(["git", "pull"], cwd=repo, capture_output=True, text=True)
-    if "Already up to date" in r.stdout:
-        print("已是最新版本")
-        return
-    print(r.stdout.strip())
-    subprocess.run([sys.executable, "-m", "pip", "install", "--break-system-packages", "-e", str(repo), "-q"])
-    print("更新完成")
+    print("xiao uninstall ...")
+
+    # 卸载 pip 包
+    r = subprocess.run(
+        [sys.executable, "-m", "pip", "uninstall", "-y", "ip-reality"],
+        capture_output=True, text=True,
+    )
+    if r.returncode == 0:
+        print("  pip: 已移除 ip-reality 包")
+
+    # 删除全局命令
+    for b in bins:
+        if b.exists():
+            b.unlink()
+            print(f"  bin: 已删除 {b}")
+
+    # 删除 CF 域名记忆
+    if cf.exists():
+        cf.unlink()
+        print(f"  cfg: 已删除 {cf}")
+
+    # 删除项目目录（如果是 pip install -e 方式）
+    if repo.exists() and repo.name == "IP-Reality":
+        import shutil
+        shutil.rmtree(repo, ignore_errors=True)
+        print(f"  dir: 已删除 {repo}")
+
+    print("卸载完成")
 
 
 def setup_logging(verbose: bool, quiet: bool):
@@ -240,9 +265,15 @@ def main():
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--update", "-u", action="store_true",
                         help="更新到最新版本")
+    parser.add_argument("--uninstall", action="store_true",
+                        help="卸载 xiao")
     args = parser.parse_args()
 
     logger = setup_logging(args.verbose, args.quiet)
+
+    if args.uninstall:
+        _do_uninstall()
+        return
 
     if args.update:
         _do_update()
