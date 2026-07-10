@@ -18,11 +18,24 @@ DEFAULT_PORTS = [443, 8443, 2053, 2083, 2096, 2443]
 MAX_CACHE_DAYS = 14
 
 
-async def fetch_sonar_index() -> list[dict]:
+def _aiohttp_session(proxy_url: str | None = None):
+    import aiohttp
+    if not proxy_url:
+        return aiohttp.ClientSession()
+    if proxy_url.startswith("socks"):
+        try:
+            from aiohttp_socks import ProxyConnector
+            return aiohttp.ClientSession(connector=ProxyConnector.from_url(proxy_url))
+        except ImportError:
+            pass
+    return aiohttp.ClientSession(proxy=proxy_url)
+
+
+async def fetch_sonar_index(proxy_url: str | None = None) -> list[dict]:
     import aiohttp
 
     try:
-        async with aiohttp.ClientSession() as session:
+        async with _aiohttp_session(proxy_url) as session:
             url = f"{SONAR_BASE}index.json"
             async with session.get(
                 url,
@@ -40,6 +53,7 @@ async def download_ledger(
     cache_dir: str = "./scans",
     ports: list[int] = None,
     force: bool = False,
+    proxy_url: str | None = None,
 ) -> str | None:
     if ports is None:
         ports = DEFAULT_PORTS
@@ -60,7 +74,7 @@ async def download_ledger(
             pass
 
     logger.info("获取 Sonar SSL 索引 ...")
-    index = await fetch_sonar_index()
+    index = await fetch_sonar_index(proxy_url=proxy_url)
     if not index:
         return None
 
@@ -105,7 +119,7 @@ async def download_ledger(
         if dst.exists() and not force:
             return
         try:
-            async with aiohttp.ClientSession() as session:
+            async with _aiohttp_session(proxy_url) as session:
                 async with session.get(
                     url,
                     timeout=aiohttp.ClientTimeout(600),

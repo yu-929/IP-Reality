@@ -23,11 +23,22 @@ def _parse_proxy(proxy_url: str | None) -> str | None:
     return proxy_url
 
 
-def _aiohttp_proxy_kwargs(proxy_url: str | None) -> dict:
-    """构造 aiohttp ClientSession 的代理参数"""
+def _aiohttp_session(proxy_url: str | None) -> "aiohttp.ClientSession":
+    """构造 aiohttp session，自动适配 HTTP/SOCKS5 代理"""
+    import aiohttp
+
     if not proxy_url:
-        return {}
-    return {"proxy": proxy_url}
+        return aiohttp.ClientSession()
+
+    if proxy_url.startswith("socks"):
+        try:
+            from aiohttp_socks import ProxyConnector
+            return aiohttp.ClientSession(connector=ProxyConnector.from_url(proxy_url))
+        except ImportError:
+            logger.warning("SOCKS5 代理需要 aiohttp-socks: pip install aiohttp-socks")
+            return aiohttp.ClientSession()
+
+    return aiohttp.ClientSession(proxy=proxy_url)
 
 
 def _proxy_connector(proxy_url: str | None):
@@ -73,11 +84,10 @@ async def _query_crtsh(sni: str, timeout: float, proxy_url: str | None = None) -
 
     url = f"https://crt.sh/?q=%25.{sni}&output=json"
     retries = 3
-    kwargs = _aiohttp_proxy_kwargs(proxy_url)
 
     for attempt in range(retries):
         try:
-            async with aiohttp.ClientSession(**kwargs) as session:
+            async with _aiohttp_session(proxy_url) as session:
                 async with session.get(
                     url,
                     timeout=aiohttp.ClientTimeout(total=timeout + 10),

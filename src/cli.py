@@ -311,7 +311,7 @@ def main():
         if not args.no_ledger and not ledger_dir:
             from .ledger_dl import download_ledger
             try:
-                ledger_dir = await download_ledger(args.ledger_cache if hasattr(args, 'ledger_cache') else "./scans", ports)
+                ledger_dir = await download_ledger("./scans", ports, proxy_url=args.proxy)
             except Exception:
                 pass
 

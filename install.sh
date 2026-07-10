@@ -21,8 +21,8 @@ echo -e "${GREEN}[OK]${NC} Python $PYVER"
 
 # 2. 安装依赖
 echo -e "${CYAN}[..] 安装 Python 依赖 ...${NC}"
-pip3 install --break-system-packages cryptography aiodns colorama aiohttp 2>/dev/null || \
-pip3 install cryptography aiodns colorama aiohttp 2>/dev/null || true
+pip3 install --break-system-packages cryptography aiodns colorama aiohttp aiohttp-socks python-socks 2>/dev/null || \
+pip3 install cryptography aiodns colorama aiohttp aiohttp-socks python-socks 2>/dev/null || true
 
 # 3. 克隆/更新项目
 if [ -d "$INSTALL_DIR" ]; then
