@@ -1,4 +1,4 @@
-# QIAN — IP-Reality 节点发现工具
+# IP-Reality 节点发现工具
 
 基于 CT 日志 + TLS 历史账本，反向提取全球 IP:PORT，通过双重 TLS 握手精准筛选存在配置特性的 REALITY 节点。
 
