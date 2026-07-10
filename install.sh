@@ -3,12 +3,12 @@ set -e
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; CYAN='\033[0;36m'; NC='\033[0m'
 echo -e "${CYAN}================================================${NC}"
-echo -e "${CYAN}  QIAN  IP-Reality v2.0  一键安装${NC}"
+echo -e "${CYAN}  XIAO  IP-Reality v2.0  一键安装${NC}"
 echo -e "${CYAN}================================================${NC}"
 echo
 
 INSTALL_DIR="/opt/ip-reality"
-BIN_PATH="/usr/local/bin/qian"
+BIN_PATH="/usr/local/bin/xiao"
 REPO_URL="https://github.com/yu-929/IP-Reality.git"
 
 # 1. 检查 Python
@@ -49,10 +49,10 @@ echo
 echo -e "${GREEN}[OK] 安装完成！${NC}"
 echo
 echo -e "  快速开始:"
-echo -e "    ${CYAN}qian --sni images.apple.com --cf-domain your.domain.com${NC}"
+echo -e "    ${CYAN}xiao --sni images.apple.com --cf-domain your.domain.com${NC}"
 echo
 echo -e "  菜单模式:"
-echo -e "    ${CYAN}qian${NC}"
+echo -e "    ${CYAN}xiao${NC}"
 echo
 echo -e "  更新:"
 echo -e "    ${CYAN}curl -fsSL https://raw.githubusercontent.com/e13815332/ip-reality/main/install.sh | bash${NC}"

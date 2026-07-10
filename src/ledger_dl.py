@@ -11,7 +11,7 @@ import shutil
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-logger = logging.getLogger("qian.ledger")
+logger = logging.getLogger("xiao.ledger")
 
 SONAR_BASE = "https://opendata.rapid7.com/sonar.ssl/"
 DEFAULT_PORTS = [443, 8443, 2053, 2083, 2096, 2443]

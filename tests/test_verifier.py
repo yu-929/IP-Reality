@@ -67,6 +67,6 @@ class TestVerifier:
 
 class TestExceptions:
     def test_exceptions_hierarchy(self):
-        from src.exceptions import QianError, ConnectionError, TLSHandshakeError
-        assert issubclass(ConnectionError, QianError)
-        assert issubclass(TLSHandshakeError, QianError)
+        from src.exceptions import XiaoError, ConnectionError, TLSHandshakeError
+        assert issubclass(ConnectionError, XiaoError)
+        assert issubclass(TLSHandshakeError, XiaoError)

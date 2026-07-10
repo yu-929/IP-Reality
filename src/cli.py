@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-qian — IP-Reality 节点发现工具
+xiao — IP-Reality 节点发现工具
 基于 CT 日志 + TLS 账本，双重握手验证，精准筛选可薅 CF 羊毛的 REALITY 节点。
 
 用法:
-  qian --sni images.apple.com --cf-domain my.cdn.domain
-  qian --sni swdist.apple.com --cf-domain my.cdn.domain --ledger scans/
-  qian --sni-list snis.txt --cf-domain my.cdn.domain
-  qian   (菜单模式)
+  xiao --sni images.apple.com --cf-domain my.cdn.domain
+  xiao --sni swdist.apple.com --cf-domain my.cdn.domain --ledger scans/
+  xiao --sni-list snis.txt --cf-domain my.cdn.domain
+  xiao   (菜单模式)
 """
 
 import argparse
@@ -38,7 +38,7 @@ DOMAIN_RE = re.compile(
 
 def setup_logging(verbose: bool, quiet: bool):
     """配置日志: INFO->stdout, DEBUG->file, WARNING/ERROR->stderr"""
-    root = logging.getLogger("qian")
+    root = logging.getLogger("xiao")
     root.setLevel(logging.DEBUG if verbose else logging.INFO)
     root.handlers.clear()
 
@@ -55,12 +55,12 @@ def setup_logging(verbose: bool, quiet: bool):
     root.addHandler(h_stderr)
 
     if verbose:
-        fh = logging.FileHandler("qian-debug.log", encoding="utf-8")
+        fh = logging.FileHandler("xiao-debug.log", encoding="utf-8")
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s %(message)s"))
         root.addHandler(fh)
 
-    return logging.getLogger("qian")
+    return logging.getLogger("xiao")
 
 
 def validate_args(args) -> list[str]:
@@ -129,7 +129,7 @@ async def menu_mode(args):
     except ImportError:
         C = G = Y = R = ""
 
-    logo = "QIAN  IP-Reality v2.0"
+    logo = "XIAO  IP-Reality v2.0"
     print(f"\n{C}{'=' * 50}{R}")
     print(f"{C}  {logo}{R}")
     print(f"{C}{'=' * 50}{R}\n")
@@ -260,7 +260,7 @@ async def run_pipeline(
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="qian",
+        prog="xiao",
         description="IP-Reality 节点发现 — 基于 CT 日志 + TLS 账本的 REALITY 配置特性检测",
     )
     parser.add_argument("--sni", help="目标大厂 SNI (如 images.apple.com)")
@@ -279,8 +279,8 @@ def main():
                         help="验证并发数 (默认 500)")
     parser.add_argument("--timeout", type=float, default=3.0,
                         help="单次握手超时秒数 (默认 3.0)")
-    parser.add_argument("--output", default="qian_result.json",
-                        help="输出文件路径 (默认 qian_result.json)")
+    parser.add_argument("--output", default="xiao_result.json",
+                        help="输出文件路径 (默认 xiao_result.json)")
     parser.add_argument("--no-redundancy", action="store_true",
                         help="关闭冗余检测")
     parser.add_argument("--retry", type=int, default=1,

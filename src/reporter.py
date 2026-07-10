@@ -8,7 +8,7 @@ import logging
 import os
 from datetime import datetime, timezone
 
-logger = logging.getLogger("qian.reporter")
+logger = logging.getLogger("xiao.reporter")
 
 try:
     from colorama import Fore, Style, init

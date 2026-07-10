@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 >nul
-title QIAN IP-Reality Windows Build
+title XIAO IP-Reality Windows Build
 
 echo ============================================
-echo   QIAN  IP-Reality v2.0  Windows Build
+echo   XIAO  IP-Reality v2.0  Windows Build
 echo ============================================
 echo.
 
@@ -23,7 +23,7 @@ echo [2/4] Install package ...
 pip install -e . -q
 
 echo [3/4] Build exe ...
-pyinstaller --onefile --console --name qian ^
+pyinstaller --onefile --console --name xiao ^
     --add-data "src;src" ^
     -m src.cli
 
@@ -35,8 +35,8 @@ if %errorlevel% neq 0 (
 
 echo [4/4] Done!
 echo.
-echo   Output: dist\qian.exe
-echo   Usage:  dist\qian.exe --sni images.apple.com --cf-domain your.domain.com
-echo   Menu:   dist\qian.exe
+echo   Output: dist\xiao.exe
+echo   Usage:  dist\xiao.exe --sni images.apple.com --cf-domain your.domain.com
+echo   Menu:   dist\xiao.exe
 echo.
 pause

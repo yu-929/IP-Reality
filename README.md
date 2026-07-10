@@ -9,12 +9,12 @@
 curl -fsSL https://raw.githubusercontent.com/yu-929/IP-Reality/main/install.sh | bash
 
 # 菜单模式
-qian
+xiao
 
 # 命令行模式
-qian --sni images.apple.com --cf-domain my-cdn.example.com
+xiao --sni images.apple.com --cf-domain my-cdn.example.com
 
-# Windows: 下载项目 -> 双击 build.bat -> dist\qian.exe
+# Windows: 下载项目 -> 双击 build.bat -> dist\xiao.exe
 ```
 
 ## 这是什么
@@ -23,7 +23,7 @@ REALITY 协议虽然加密了 SNI，但 Xray-core 的 `serverNames` 配置为空
 
 这意味着你用苹果证书做 REALITY，别人用自己控制的 Cloudflare 域名去握手，REALITY 服务端一样会透传给目标服务器。目标服务器配了 CF CDN，回 `cf-ray` 头 — 等于这个节点能被当 CF 反代用。
 
-qian 自动化发现这些节点。
+xiao 自动化发现这些节点。
 
 ## 核心原理
 
@@ -39,7 +39,7 @@ qian 自动化发现这些节点。
 
 ## 为什么不用传统盲扫
 
-传统用几十万 CIDR masscan 扫 443，99.9% 的 IP 没有 TLS。qian 只扫描已知有 TLS 服务的 IP：
+传统用几十万 CIDR masscan 扫 443，99.9% 的 IP 没有 TLS。xiao 只扫描已知有 TLS 服务的 IP：
 
 1. **CT 日志** (crt.sh) — 查出哪些 IP 部署了指定大厂的证书
 2. **TLS 历史账本** (Rapid7 Project Sonar) — 捞出所有见过该 SNI 的 IP
@@ -55,31 +55,31 @@ qian 自动化发现这些节点。
 | `--ports` | 伴随嗅探的端口。默认 443,8443,2053,2083,2096,2443 |
 | `--concurrency` | 验证并发数。默认 500 |
 | `--timeout` | 单次握手超时秒数。默认 3.0 |
-| `--output` | 输出文件。默认 `qian_result.json` |
+| `--output` | 输出文件。默认 `xiao_result.json` |
 | `--no-redundancy` | 关闭冗余验证 |
 | `--no-ledger` | 跳过 TLS 账本，仅用 CT 日志 |
-| `--verbose` | 详细日志 (写入 qian-debug.log) |
+| `--verbose` | 详细日志 (写入 xiao-debug.log) |
 | `--quiet` | 安静模式 |
 
 ## 运行示例
 
 ```bash
 # 最简用法
-qian --sni images.apple.com --cf-domain my-cdn.example.com
+xiao --sni images.apple.com --cf-domain my-cdn.example.com
 
 # 多 SNI 批量
-qian --sni-list ./snis.txt --cf-domain my-cdn.example.com
+xiao --sni-list ./snis.txt --cf-domain my-cdn.example.com
 
 # 高并发 VPS
-qian --sni images.apple.com --cf-domain my-cdn.example.com \
+xiao --sni images.apple.com --cf-domain my-cdn.example.com \
     --concurrency 2000 --timeout 2.5
 
 # 配合 TLS 账本
-qian --sni swdist.apple.com --cf-domain my-cdn.example.com \
+xiao --sni swdist.apple.com --cf-domain my-cdn.example.com \
     --ledger /data/sonar-scans/
 
 # 指定输出
-qian --sni images.apple.com --cf-domain my-cdn.example.com \
+xiao --sni images.apple.com --cf-domain my-cdn.example.com \
     --output nodes.json
 ```
 
@@ -119,17 +119,17 @@ JSON:
 curl -fsSL https://raw.githubusercontent.com/yu-929/IP-Reality/main/install.sh | bash
 ```
 
-安装后全局可用 `qian` 命令。
+安装后全局可用 `xiao` 命令。
 
 ### Windows
 
 1. 下载项目 ZIP 或 `git clone`
 2. 双击 `build.bat`
-3. 输出 `dist\qian.exe`
+3. 输出 `dist\xiao.exe`
 4. 命令行运行
 
 ```cmd
-dist\qian.exe --sni images.apple.com --cf-domain your.domain.com
+dist\xiao.exe --sni images.apple.com --cf-domain your.domain.com
 ```
 
 ### 开发模式
@@ -138,7 +138,7 @@ dist\qian.exe --sni images.apple.com --cf-domain your.domain.com
 git clone https://github.com/e13815332/ip-reality.git
 cd ip-reality
 pip install -e .
-qian --sni images.apple.com --cf-domain my-cdn.example.com
+xiao --sni images.apple.com --cf-domain my-cdn.example.com
 ```
 
 ## 推荐 SNI

@@ -11,7 +11,7 @@ import logging
 import re
 from pathlib import Path
 
-logger = logging.getLogger("qian.fetcher")
+logger = logging.getLogger("xiao.fetcher")
 
 CRTSH_MIN_INTERVAL = 1.2  # crt.sh 请求最小间隔 (秒)
 

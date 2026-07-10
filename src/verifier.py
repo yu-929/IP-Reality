@@ -15,9 +15,9 @@ import time
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
-from .exceptions import ConnectionError as QianConnError, TLSHandshakeError, CertParseError, CFVerifyError
+from .exceptions import ConnectionError as XiaoConnError, TLSHandshakeError, CertParseError, CFVerifyError
 
-logger = logging.getLogger("qian.verifier")
+logger = logging.getLogger("xiao.verifier")
 
 
 async def _open_connection(ip: str, port: int, timeout: float, proxy_url: str | None = None):
@@ -36,7 +36,7 @@ async def _open_connection_via_proxy(ip: str, port: int, timeout: float, proxy_u
         from python_socks import ProxyType, parse_proxy_url
     except ImportError:
         logger.warning("代理需要 python-socks 库: pip install python-socks[asyncio]")
-        raise QianConnError("python-socks 未安装")
+        raise XiaoConnError("python-socks 未安装")
 
     proxy_type, proxy_host, proxy_port, proxy_user, proxy_pass = parse_proxy_url(proxy_url)
     proxy = Proxy(
