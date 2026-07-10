@@ -1,0 +1,10 @@
+__pycache__/
+*.egg-info/
+*.pyc
+qian-debug.log
+qian_result.json
+scans/
+.pytest_cache/
+dist/
+build/
+*.spec
